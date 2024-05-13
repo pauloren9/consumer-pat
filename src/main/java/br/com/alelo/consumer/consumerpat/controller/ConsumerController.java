@@ -33,6 +33,7 @@ public class ConsumerController {
         log.info("obtendo todos clientes");
         var consumers = repository.getAllConsumersList();
 
+
         return consumers;
     }
 
