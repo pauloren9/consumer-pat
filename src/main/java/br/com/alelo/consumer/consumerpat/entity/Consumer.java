@@ -12,7 +12,6 @@ import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
-import java.util.Objects;
 
 @Data
 @Entity
@@ -38,6 +37,7 @@ public class Consumer {
     @NotNull
     int residencePhoneNumber;
     int phoneNumber;
+    @NotNull
     //    @Email
     String email;
 
@@ -54,16 +54,13 @@ public class Consumer {
     int postalCode;
 
     //cards
-    @NotNull
     int foodCardNumber;
 
     double foodCardBalance;
 
-    @NotNull
     int fuelCardNumber;
     double fuelCardBalance;
 
-    @NotNull
     int drugCardNumber;
     double drugCardBalance;
 

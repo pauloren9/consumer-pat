@@ -10,6 +10,7 @@ import org.hibernate.service.spi.ServiceException;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
+import javax.transaction.Transactional;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -51,19 +52,20 @@ public class ConsumerService {
 
     public List<Consumer> listAllConsumers() {
         try {
-            log.debug("Obtendo todos os clientes");
+            log.debug("Getting all consumers");
             List<Consumer> consumers = this.consumerRepository.findAll();
-            if (consumers == null) {
-                log.warn("A lista de consumidores retornada é nula. Retornando uma lista vazia.");
+            if (consumers.isEmpty()) {
+                log.warn("The returned list of consumers is empty. Returning an empty list.");
                 return Collections.emptyList();
             }
             return consumers;
         } catch (Exception ex) {
-            log.error("Ocorreu um erro ao buscar todos os consumidores: {}", ex.getMessage());
-            throw new ServiceException("Erro ao buscar consumidores", ex);
+            log.error("An error occurred while fetching all consumers: {}", ex.getMessage());
+            throw new ServiceException("Error fetching consumers", ex);
         }
     }
 
+    @Transactional
     public Consumer updateConsumer(Integer id, ConsumerRequest consumer) {
 
         Optional<Consumer> optionalConsumer = this.consumerRepository.findById(id);
@@ -83,13 +85,10 @@ public class ConsumerService {
             existingConsumer.setCity(consumer.getCity());
             existingConsumer.setCountry(consumer.getCountry());
             existingConsumer.setPostalCode(consumer.getPostalCode());
-            existingConsumer.setFoodCardBalance(consumer.getFoodCardBalance());
-            existingConsumer.setFuelCardBalance(consumer.getFuelCardBalance());
-            existingConsumer.setDrugCardBalance(consumer.getDrugCardBalance());
 
-            return this.consumerRepository.save(existingConsumer);
+            return existingConsumer;
         } else {
-            throw new IllegalArgumentException("Consumer não encontrado para o id: " + id);
+            throw new NotFoundException("Consumer not found for id: " + id);
         }
 
     }
@@ -119,9 +118,9 @@ public class ConsumerService {
             });
 
             this.consumerRepository.saveAll(consumers.keySet());
-            return "Saldo e valores atualizados para o cartão: " + cardNumber + " tipo: " + cardType;
+            return "Balances and values updated for card: " + cardNumber + ", type: " + cardType;
         } else {
-            throw new NotFoundException("Type of card not found to number: " + cardNumber);
+            throw new NotFoundException("Type of card not found for number: " + cardNumber);
         }
     }
 
@@ -145,5 +144,4 @@ public class ConsumerService {
 
         return data;
     }
-
 }

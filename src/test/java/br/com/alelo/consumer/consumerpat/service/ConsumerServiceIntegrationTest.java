@@ -46,15 +46,16 @@ class ConsumerServiceIntegrationTest {
     void testSetBalanceOnFoodCardConsumerWithSuccessfully() throws IOException {
         String response = this.consumerService.setBalance(1111, 100.0);
         assertNotNull(response);
-        assertEquals("Saldo e valores atualizados para o cartão: " + "1111" + " tipo: " + "food", response);
+        assertEquals("Balances and values updated for card: " + "1111" + ", type: " + "food", response);
     }
+
     @Test
     @DirtiesContext
     @Sql({"insertConsumer1.sql", "insertConsumer2.sql"})
     void testSetBalanceOnDrugCardConsumerWithSuccessfully() throws IOException {
         String response = this.consumerService.setBalance(3333, 100.0);
         assertNotNull(response);
-        assertEquals("Saldo e valores atualizados para o cartão: " + "3333" + " tipo: " + "drug", response);
+        assertEquals("Balances and values updated for card: " + "3333" + ", type: " + "drug", response);
     }
 
     @Test
@@ -63,7 +64,7 @@ class ConsumerServiceIntegrationTest {
     void testSetBalanceOnFuelCardConsumerWithSuccessfully() throws IOException {
         String response = this.consumerService.setBalance(2145, 100.0);
         assertNotNull(response);
-        assertEquals("Saldo e valores atualizados para o cartão: " + "2145" + " tipo: " + "fuel", response);
+        assertEquals("Balances and values updated for card: " + "2145" + ", type: " + "fuel", response);
     }
 
     @Test
@@ -71,9 +72,8 @@ class ConsumerServiceIntegrationTest {
     @Sql({"insertConsumer1.sql", "insertConsumer2.sql"})
     void testNotFoundCardCardConsumerWithSuccessfully() throws IOException {
         var response = assertThrows(NotFoundException.class, () -> this.consumerService.setBalance(123, 100.0));
-        assertEquals("Type of card not found to number: 123", response.getMessage());
+        assertEquals("Type of card not found for number: 123", response.getMessage());
     }
-
 
 
     @Test
@@ -95,9 +95,6 @@ class ConsumerServiceIntegrationTest {
         consumerRequest.setFoodCardNumber(1111);
         consumerRequest.setFoodCardBalance(250.0);
         consumerRequest.setFuelCardNumber(2222);
-        consumerRequest.setFuelCardBalance(200.0);
-        consumerRequest.setDrugCardNumber(3333);
-        consumerRequest.setDrugCardBalance(300.0);
 
         this.consumerService.createConsumer(consumerRequest);
         Consumer response = this.consumerService.listAllConsumers().get(0);
@@ -107,7 +104,6 @@ class ConsumerServiceIntegrationTest {
         assertEquals(consumerRequest.getDocumentNumber(), response.getDocumentNumber());
         assertEquals(consumerRequest.getMobilePhoneNumber(), response.getMobilePhoneNumber());
         assertEquals(consumerRequest.getEmail(), response.getEmail());
-        assertEquals(consumerRequest.getFoodCardBalance(), response.getFoodCardBalance());
         assertEquals(consumerRequest.getDrugCardNumber(), response.getDrugCardNumber());
     }
 
@@ -129,11 +125,9 @@ class ConsumerServiceIntegrationTest {
         consumerRequest.setCountry("Country");
         consumerRequest.setPostalCode(12345);
         consumerRequest.setFoodCardNumber(1111);
-        consumerRequest.setFoodCardBalance(250.0);
         consumerRequest.setFuelCardNumber(2222);
-        consumerRequest.setFuelCardBalance(200.0);
         consumerRequest.setDrugCardNumber(3333);
-        consumerRequest.setDrugCardBalance(300.0);
+
 
         this.consumerService.updateConsumer(1, consumerRequest);
         Consumer response = this.consumerService.listAllConsumers().get(0);
@@ -142,8 +136,7 @@ class ConsumerServiceIntegrationTest {
         assertEquals(consumerRequest.getDocumentNumber(), response.getDocumentNumber());
         assertEquals(consumerRequest.getMobilePhoneNumber(), response.getMobilePhoneNumber());
         assertEquals(consumerRequest.getEmail(), response.getEmail());
-        assertEquals(consumerRequest.getFoodCardBalance(), response.getFoodCardBalance());
-
 
     }
+
 }

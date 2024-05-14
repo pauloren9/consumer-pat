@@ -9,10 +9,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.webjars.NotFoundException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -20,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -105,7 +109,7 @@ class ConsumerServiceTest {
     void testListAllConsumersReturnsNull() {
         ConsumerService consumerService = new ConsumerService(this.consumerRepository, this.extractRepository);
 
-        doReturn(null).when(this.consumerRepository).findAll();
+        doReturn(Collections.emptyList()).when(this.consumerRepository).findAll();
 
         List<Consumer> result = consumerService.listAllConsumers();
 
@@ -120,7 +124,20 @@ class ConsumerServiceTest {
         doThrow(new RuntimeException()).when(this.consumerRepository).findAll();
 
         var result = assertThrows(ServiceException.class, () -> consumerService.listAllConsumers());
-        assertEquals("Erro ao buscar consumidores", result.getMessage());
+        assertEquals("Error fetching consumers", result.getMessage());
+    }
+
+    @Test
+    void testThrowNotFoundExceptionWhenTryUpdateConsumer() {
+        ConsumerService consumerService = new ConsumerService(this.consumerRepository, this.extractRepository);
+
+        doReturn(Optional.empty()).when(this.consumerRepository).findById(anyInt());
+
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
+            consumerService.updateConsumer(1, new ConsumerRequest());
+        });
+
+        assertEquals("Consumer not found for id: 1", exception.getMessage());
     }
 
 }
