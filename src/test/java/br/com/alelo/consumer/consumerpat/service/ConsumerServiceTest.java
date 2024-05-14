@@ -16,6 +16,7 @@ import org.webjars.NotFoundException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,11 +25,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ConsumerServiceTest {
+    public static final String FOOD = "food";
     @Mock
     private ConsumerRepository consumerRepository;
     @Mock
@@ -112,6 +115,43 @@ class ConsumerServiceTest {
         });
 
         assertEquals("Consumer not found for id: 1", exception.getMessage());
+    }
+
+    @Test
+    void testFindConsumerWithSuccessfully(){
+        ConsumerService consumerService = new ConsumerService(this.consumerRepository, this.extractRepository);
+
+        Consumer consumerToSave = Consumer.builder()
+                .id(123)
+                .name("João")
+                .documentNumber(112)
+                .birthDate(new Date())
+                .mobilePhoneNumber(123)
+                .residencePhoneNumber(321)
+                .phoneNumber(456)
+                .email("email")
+                .street("street")
+                .number(123)
+                .city("city")
+                .country("coutry")
+                .postalCode(1)
+                .foodCardNumber(123)
+                .foodCardBalance(345)
+                .fuelCardNumber(876)
+                .fuelCardBalance(654)
+                .drugCardNumber(456)
+                .drugCardBalance(324)
+                .build();
+
+        doReturn(consumerToSave).when(this.consumerRepository).findByFoodCardNumber(consumerToSave.getFoodCardNumber());
+
+        Map<Consumer, String> result = consumerService.findConsumer(consumerToSave.getFoodCardNumber());
+
+        verify(this.consumerRepository).findByDrugstoreNumber(consumerToSave.getFoodCardNumber());
+        verify(this.consumerRepository).findByFoodCardNumber(consumerToSave.getFoodCardNumber());
+        verify(this.consumerRepository).findByFuelCardNumber(consumerToSave.getFoodCardNumber());
+
+        assertEquals(FOOD, result.entrySet().iterator().next().getValue());
     }
 
 }

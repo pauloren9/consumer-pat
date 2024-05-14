@@ -22,6 +22,9 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class ConsumerService {
+    public static final String FUEL = "fuel";
+    public static final String FOOD = "food";
+    public static final String DRUG = "drug";
     private final ConsumerRepository consumerRepository;
     private final ExtractRepository extractRepository;
 
@@ -101,13 +104,13 @@ public class ConsumerService {
 
             consumers.forEach((consumer, type) -> {
                 switch (type) {
-                    case "drug":
+                    case DRUG:
                         consumer.setDrugCardBalance(consumer.getDrugCardBalance() + value);
                         break;
-                    case "food":
+                    case FOOD:
                         consumer.setFoodCardBalance(consumer.getFoodCardBalance() + value);
                         break;
-                    case "fuel":
+                    case FUEL:
                         consumer.setFuelCardBalance(consumer.getFuelCardBalance() + value);
                         break;
                 }
@@ -120,22 +123,22 @@ public class ConsumerService {
         }
     }
 
-    private Map<Consumer, String> findConsumer(int cardNumber) {
+    public Map<Consumer, String> findConsumer(int cardNumber) {
         Map<Consumer, String> data = new HashMap<>();
 
         Consumer drugsCard = this.consumerRepository.findByDrugstoreNumber(cardNumber);
         if (drugsCard != null) {
-            data.put(drugsCard, "drug");
+            data.put(drugsCard, DRUG);
         }
 
         Consumer foodCard = this.consumerRepository.findByFoodCardNumber(cardNumber);
         if (foodCard != null) {
-            data.put(foodCard, "food");
+            data.put(foodCard, FOOD);
         }
 
         Consumer fuelCard = this.consumerRepository.findByFuelCardNumber(cardNumber);
         if (fuelCard != null) {
-            data.put(fuelCard, "fuel");
+            data.put(fuelCard, FUEL);
         }
 
         return data;

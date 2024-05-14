@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.webjars.NotFoundException;
 
@@ -20,9 +19,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
-@ActiveProfiles("test")
 class ConsumerServiceIntegrationTest {
 
+    public static final String FOOD = "food";
+    public static final String DRUG = "drug";
+    public static final String FUEL = "fuel";
     @Autowired
     private ConsumerRepository consumerRepository;
     @Autowired
@@ -46,7 +47,7 @@ class ConsumerServiceIntegrationTest {
     void testSetBalanceOnFoodCardConsumerWithSuccessfully() throws IOException {
         String response = this.consumerService.setBalance(1111, 100.0);
         assertNotNull(response);
-        assertEquals("Balances and values updated for card: " + "1111" + ", type: " + "food", response);
+        assertEquals("Balances and values updated for card: " + "1111" + ", type: " + FOOD, response);
     }
 
     @Test
@@ -55,7 +56,7 @@ class ConsumerServiceIntegrationTest {
     void testSetBalanceOnDrugCardConsumerWithSuccessfully() throws IOException {
         String response = this.consumerService.setBalance(3333, 100.0);
         assertNotNull(response);
-        assertEquals("Balances and values updated for card: " + "3333" + ", type: " + "drug", response);
+        assertEquals("Balances and values updated for card: " + "3333" + ", type: " + DRUG, response);
     }
 
     @Test
@@ -64,7 +65,7 @@ class ConsumerServiceIntegrationTest {
     void testSetBalanceOnFuelCardConsumerWithSuccessfully() throws IOException {
         String response = this.consumerService.setBalance(2145, 100.0);
         assertNotNull(response);
-        assertEquals("Balances and values updated for card: " + "2145" + ", type: " + "fuel", response);
+        assertEquals("Balances and values updated for card: " + "2145" + ", type: " + FUEL, response);
     }
 
     @Test
