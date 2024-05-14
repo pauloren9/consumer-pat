@@ -90,7 +90,6 @@ public class ConsumerService {
 
     }
 
-
     public String setBalance(int cardNumber, double value) {
         Map<Consumer, String> consumers = this.findConsumer(cardNumber);
         return updateBalance(cardNumber, value, consumers);

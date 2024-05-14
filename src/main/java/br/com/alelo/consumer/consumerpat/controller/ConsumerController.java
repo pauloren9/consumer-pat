@@ -24,7 +24,6 @@ public class ConsumerController {
     public static final String ROUTE = "/consumer";
     private final ConsumerService consumerService;
 
-
     /* Listar todos os clientes (obs.: tabela possui cerca de 50.000 registros) */
     @GetMapping(path = "/consumer-list/{page}/{size}")
     public List<Consumer> listAllConsumers(@PathVariable("page") int page, @PathVariable("size") int size) {
@@ -53,7 +52,7 @@ public class ConsumerController {
     public ResponseEntity<String> setBalance(@PathVariable("card-number") int cardNumber, @PathVariable("value") double value) {
         return ResponseEntity.status(HttpStatus.OK).body(this.consumerService.setBalance(cardNumber, value));
     }
-//
+
 //    /*
 //     * Débito de valor no cartão (compra)
 //     *
