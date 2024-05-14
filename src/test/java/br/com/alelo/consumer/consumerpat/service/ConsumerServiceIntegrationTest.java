@@ -32,7 +32,7 @@ class ConsumerServiceIntegrationTest {
     @DirtiesContext
     @Sql({"insertConsumer1.sql", "insertConsumer2.sql"})
     void testGetAllConsumerWithSuccessfully() throws IOException {
-        List<Consumer> response = this.consumerService.listAllConsumers();
+        List<Consumer> response = this.consumerService.listAllConsumers(0, 5);
         assertNotNull(response);
         assertEquals(1, response.get(0).getId());
         assertEquals("Jhon Snow", response.get(0).getName());
@@ -97,7 +97,7 @@ class ConsumerServiceIntegrationTest {
         consumerRequest.setFuelCardNumber(2222);
 
         this.consumerService.createConsumer(consumerRequest);
-        Consumer response = this.consumerService.listAllConsumers().get(0);
+        Consumer response = this.consumerService.listAllConsumers(0, 5).get(0);
 
         assertEquals(1, response.getId());
         assertEquals(consumerRequest.getName(), response.getName());
@@ -130,7 +130,7 @@ class ConsumerServiceIntegrationTest {
 
 
         this.consumerService.updateConsumer(1, consumerRequest);
-        Consumer response = this.consumerService.listAllConsumers().get(0);
+        Consumer response = this.consumerService.listAllConsumers(0, 5).get(0);
 
         assertEquals(consumerRequest.getName(), response.getName());
         assertEquals(consumerRequest.getDocumentNumber(), response.getDocumentNumber());

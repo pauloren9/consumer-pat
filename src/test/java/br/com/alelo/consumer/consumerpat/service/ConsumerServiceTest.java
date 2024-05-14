@@ -4,29 +4,28 @@ import br.com.alelo.consumer.consumerpat.entity.Consumer;
 import br.com.alelo.consumer.consumerpat.entity.dto.ConsumerRequest;
 import br.com.alelo.consumer.consumerpat.respository.ConsumerRepository;
 import br.com.alelo.consumer.consumerpat.respository.ExtractRepository;
-import org.hibernate.service.spi.ServiceException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.webjars.NotFoundException;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ConsumerServiceTest {
@@ -90,42 +89,17 @@ class ConsumerServiceTest {
     }
 
     @Test
-    void testListAllConsumersSuccess() {
+    void testListAllConsumers() {
         ConsumerService consumerService = new ConsumerService(this.consumerRepository, this.extractRepository);
 
-        List<Consumer> mockConsumers = new ArrayList<>();
-        mockConsumers.add(new Consumer());
-        mockConsumers.add(new Consumer());
-        doReturn(mockConsumers).when(this.consumerRepository).findAll();
+        Page<Consumer> emptyPage = new PageImpl<>(Collections.emptyList());
+        when(this.consumerRepository.findAll(PageRequest.of(0, 5))).thenReturn(emptyPage);
 
-        List<Consumer> result = consumerService.listAllConsumers();
+        List<Consumer> consumers = consumerService.listAllConsumers(0, 5);
 
-        assertNotNull(result);
-        assertFalse(result.isEmpty());
-        assertEquals(2, result.size());
+        assertTrue(consumers.isEmpty());
     }
 
-    @Test
-    void testListAllConsumersReturnsNull() {
-        ConsumerService consumerService = new ConsumerService(this.consumerRepository, this.extractRepository);
-
-        doReturn(Collections.emptyList()).when(this.consumerRepository).findAll();
-
-        List<Consumer> result = consumerService.listAllConsumers();
-
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void testListAllConsumersException() {
-        ConsumerService consumerService = new ConsumerService(this.consumerRepository, this.extractRepository);
-
-        doThrow(new RuntimeException()).when(this.consumerRepository).findAll();
-
-        var result = assertThrows(ServiceException.class, () -> consumerService.listAllConsumers());
-        assertEquals("Error fetching consumers", result.getMessage());
-    }
 
     @Test
     void testThrowNotFoundExceptionWhenTryUpdateConsumer() {

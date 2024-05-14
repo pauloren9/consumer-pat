@@ -26,9 +26,9 @@ public class ConsumerController {
 
 
     /* Listar todos os clientes (obs.: tabela possui cerca de 50.000 registros) */
-    @GetMapping(path = "/consumer-list")
-    public List<Consumer> listAllConsumers() {
-        return this.consumerService.listAllConsumers();
+    @GetMapping(path = "/consumer-list/{page}/{size}")
+    public List<Consumer> listAllConsumers(@PathVariable("page") int page, @PathVariable("size") int size) {
+        return this.consumerService.listAllConsumers(page, size);
     }
 
     /* Cadastrar novos clientes */

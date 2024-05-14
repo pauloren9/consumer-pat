@@ -6,7 +6,8 @@ import br.com.alelo.consumer.consumerpat.respository.ConsumerRepository;
 import br.com.alelo.consumer.consumerpat.respository.ExtractRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.service.spi.ServiceException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
@@ -50,19 +51,15 @@ public class ConsumerService {
         return consumerSave.getId();
     }
 
-    public List<Consumer> listAllConsumers() {
-        try {
-            log.debug("Getting all consumers");
-            List<Consumer> consumers = this.consumerRepository.findAll();
-            if (consumers.isEmpty()) {
-                log.warn("The returned list of consumers is empty. Returning an empty list.");
-                return Collections.emptyList();
-            }
-            return consumers;
-        } catch (Exception ex) {
-            log.error("An error occurred while fetching all consumers: {}", ex.getMessage());
-            throw new ServiceException("Error fetching consumers", ex);
+    public List<Consumer> listAllConsumers(int page, int size) {
+        log.debug("Getting page {} of consumers with size {}", page, size);
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Consumer> consumerPage = consumerRepository.findAll(pageRequest);
+        if (consumerPage.isEmpty()) {
+            log.warn("The returned list of consumers is empty. Returning an empty list.");
+            return Collections.emptyList();
         }
+        return consumerPage.getContent();
     }
 
     @Transactional
