@@ -71,9 +71,9 @@ class ConsumerServiceIntegrationTest {
     @Test
     @DirtiesContext
     @Sql({"insertConsumer1.sql", "insertConsumer2.sql"})
-    void testNotFoundCardCardConsumerWithSuccessfully() throws IOException {
+    void testNotFoundCardConsumerWithSuccessfully() throws IOException {
         var response = assertThrows(NotFoundException.class, () -> this.consumerService.setBalance(123, 100.0));
-        assertEquals("Type of card not found for number: 123", response.getMessage());
+        assertEquals("Card not found for number: 123", response.getMessage());
     }
 
 

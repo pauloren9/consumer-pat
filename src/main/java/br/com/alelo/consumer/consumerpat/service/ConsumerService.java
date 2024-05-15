@@ -1,6 +1,7 @@
 package br.com.alelo.consumer.consumerpat.service;
 
 import br.com.alelo.consumer.consumerpat.entity.Consumer;
+import br.com.alelo.consumer.consumerpat.entity.Extract;
 import br.com.alelo.consumer.consumerpat.entity.dto.ConsumerRequest;
 import br.com.alelo.consumer.consumerpat.respository.ConsumerRepository;
 import br.com.alelo.consumer.consumerpat.respository.ExtractRepository;
@@ -13,6 +14,7 @@ import org.webjars.NotFoundException;
 
 import javax.transaction.Transactional;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +59,7 @@ public class ConsumerService {
     public List<Consumer> listAllConsumers(int page, int size) {
         log.debug("Getting page {} of consumers with size {}", page, size);
         PageRequest pageRequest = PageRequest.of(page, size);
-        Page<Consumer> consumerPage = consumerRepository.findAll(pageRequest);
+        Page<Consumer> consumerPage = this.consumerRepository.findAll(pageRequest);
         if (consumerPage.isEmpty()) {
             log.warn("The returned list of consumers is empty. Returning an empty list.");
             return Collections.emptyList();
@@ -94,33 +96,77 @@ public class ConsumerService {
     }
 
     public String setBalance(int cardNumber, double value) {
-        Map<Consumer, String> consumers = this.findConsumer(cardNumber);
-        return updateBalance(cardNumber, value, consumers);
+        Map<Consumer, String> consumers = findConsumer(cardNumber);
+        if (consumers.isEmpty()) {
+            throw new NotFoundException("Card not found for number: " + cardNumber);
+        }
+
+        String cardType = consumers.values().iterator().next();
+        return updateBalance(cardNumber, value, consumers, cardType);
     }
 
-    private String updateBalance(int cardNumber, double value, Map<Consumer, String> consumers) {
-        if (!consumers.isEmpty()) {
-            String cardType = consumers.values().iterator().next();
-
-            consumers.forEach((consumer, type) -> {
-                switch (type) {
-                    case DRUG:
-                        consumer.setDrugCardBalance(consumer.getDrugCardBalance() + value);
-                        break;
-                    case FOOD:
-                        consumer.setFoodCardBalance(consumer.getFoodCardBalance() + value);
-                        break;
-                    case FUEL:
-                        consumer.setFuelCardBalance(consumer.getFuelCardBalance() + value);
-                        break;
-                }
-            });
-
-            this.consumerRepository.saveAll(consumers.keySet());
-            return "Balances and values updated for card: " + cardNumber + ", type: " + cardType;
-        } else {
-            throw new NotFoundException("Type of card not found for number: " + cardNumber);
+    public String buy(int establishmentType, String establishmentName, int cardNumber, String productDescription, double value) {
+        if (establishmentType < 1 || establishmentType > 3) {
+            throw new IllegalArgumentException("Invalid establishment type");
         }
+
+        Map<Consumer, String> consumers = findConsumer(cardNumber);
+
+        if (consumers.isEmpty()) {
+            throw new NotFoundException("Card not found for number: " + cardNumber);
+        }
+
+        String cardType = consumers.values().iterator().next();
+
+        if (!establishmentTypeMatchesCardType(establishmentType, cardType)) {
+            throw new IllegalArgumentException("Card type does not match establishment type");
+        }
+
+        value = applyDiscountOrTax(establishmentType, value);
+        updateBalance(cardNumber, -value, consumers, cardType);
+        saveTransaction(cardNumber, establishmentName, productDescription, value);
+
+        return "Purchase successful for card number: " + cardNumber;
+    }
+
+    private void saveTransaction(int cardNumber, String establishmentName, String productDescription, double value) {
+        Extract extract = Extract.builder()
+                .establishmentName(establishmentName)
+                .productDescription(productDescription)
+                .dateBuy(new Date())
+                .amount(value)
+                .build();
+        this.extractRepository.save(extract);
+    }
+
+    private boolean establishmentTypeMatchesCardType(int establishmentType, String cardType) {
+        return switch (establishmentType) {
+            case 1 -> cardType.equals(FOOD);
+            case 2 -> cardType.equals(DRUG);
+            case 3 -> cardType.equals(FUEL);
+            default -> false;
+        };
+    }
+
+    private double applyDiscountOrTax(int establishmentType, double value) {
+        return switch (establishmentType) {
+            case 1 -> value * 0.9; // Cashback de 10% para FOOD
+            case 3 -> value * 1.35; // Taxa de 35% para FUEL
+            default -> value;
+        };
+    }
+
+    private String updateBalance(int cardNumber, double value, Map<Consumer, String> consumers, String cardType) {
+        consumers.forEach((consumer, type) -> {
+            switch (type) {
+                case DRUG -> consumer.setDrugCardBalance(consumer.getDrugCardBalance() + value);
+                case FOOD -> consumer.setFoodCardBalance(consumer.getFoodCardBalance() + value);
+                case FUEL -> consumer.setFuelCardBalance(consumer.getFuelCardBalance() + value);
+            }
+        });
+
+        this.consumerRepository.saveAll(consumers.keySet());
+        return "Balances and values updated for card: " + cardNumber + ", type: " + cardType;
     }
 
     public Map<Consumer, String> findConsumer(int cardNumber) {
