@@ -133,13 +133,14 @@ public class ConsumerService {
         Extract extract = Extract.builder()
                 .establishmentName(establishmentName)
                 .productDescription(productDescription)
+                .cardNumber(cardNumber)
                 .dateBuy(new Date())
                 .amount(value)
                 .build();
         this.extractRepository.save(extract);
     }
 
-    private boolean establishmentTypeMatchesCardType(int establishmentType, String cardType) {
+    public boolean establishmentTypeMatchesCardType(int establishmentType, String cardType) {
         return switch (establishmentType) {
             case 1 -> cardType.equals(FOOD);
             case 2 -> cardType.equals(DRUG);
@@ -148,10 +149,11 @@ public class ConsumerService {
         };
     }
 
-    private double applyDiscountOrTax(int establishmentType, double value) {
+
+    public double applyDiscountOrTax(int establishmentType, double value) {
         return switch (establishmentType) {
             case 1 -> value * 0.9; // Cashback de 10% para FOOD
-            case 3 -> value * 1.35; // Taxa de 35% para FUEL
+            case 3 -> value * 1.35; //Taxa de 35% para FUEL
             default -> value;
         };
     }
@@ -172,7 +174,7 @@ public class ConsumerService {
     public Map<Consumer, String> findConsumer(int cardNumber) {
         Map<Consumer, String> data = new HashMap<>();
 
-        Consumer drugsCard = this.consumerRepository.findByDrugstoreNumber(cardNumber);
+        Consumer drugsCard = this.consumerRepository.findByDrugCardNumber(cardNumber);
         if (drugsCard != null) {
             data.put(drugsCard, DRUG);
         }

@@ -1,0 +1,2 @@
+INSERT INTO consumer (name, document_number, birth_date, mobile_phone_number, residence_phone_number, phone_number, email, street, number, city, country, postal_code, food_card_number, food_card_balance, fuel_card_number, fuel_card_balance, drug_card_number, drug_card_balance)
+VALUES ('Jhon Snow', 133456789, '2024-05-12', 987654321, 3256, 0, 'joao.dasneves@example.com', 'Main Street', 123, 'City', 'Country', 12345, 77777, 100.0, 2222, 100.0, 3333, 874.0);

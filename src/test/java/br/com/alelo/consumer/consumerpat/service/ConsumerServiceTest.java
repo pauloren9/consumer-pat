@@ -20,12 +20,12 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -118,7 +118,46 @@ class ConsumerServiceTest {
     }
 
     @Test
-    void testFindConsumerWithSuccessfully(){
+    void testThrowNotFoundExceptionWhenTrySetBalanceDrugCard() {
+        ConsumerService consumerService = new ConsumerService(this.consumerRepository, this.extractRepository);
+
+        doReturn(null).when(this.consumerRepository).findByDrugCardNumber(1);
+
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
+            consumerService.setBalance(1, 12.0);
+        });
+
+        assertEquals("Card not found for number: 1", exception.getMessage());
+    }
+
+    @Test
+    void testThrowNotFoundExceptionWhenTrySetBalanceFoodCard() {
+        ConsumerService consumerService = new ConsumerService(this.consumerRepository, this.extractRepository);
+
+        doReturn(null).when(this.consumerRepository).findByFoodCardNumber(1);
+
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
+            consumerService.setBalance(1, 12.0);
+        });
+
+        assertEquals("Card not found for number: 1", exception.getMessage());
+    }
+
+    @Test
+    void testThrowNotFoundExceptionWhenTrySetBalanceFuelCard() {
+        ConsumerService consumerService = new ConsumerService(this.consumerRepository, this.extractRepository);
+
+        doReturn(null).when(this.consumerRepository).findByFuelCardNumber(1);
+
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
+            consumerService.setBalance(1, 12.0);
+        });
+
+        assertEquals("Card not found for number: 1", exception.getMessage());
+    }
+
+    @Test
+    void testFindConsumerWithSuccessfully() {
         ConsumerService consumerService = new ConsumerService(this.consumerRepository, this.extractRepository);
 
         Consumer consumerToSave = Consumer.builder()
@@ -147,11 +186,117 @@ class ConsumerServiceTest {
 
         Map<Consumer, String> result = consumerService.findConsumer(consumerToSave.getFoodCardNumber());
 
-        verify(this.consumerRepository).findByDrugstoreNumber(consumerToSave.getFoodCardNumber());
+        verify(this.consumerRepository).findByDrugCardNumber(consumerToSave.getFoodCardNumber());
         verify(this.consumerRepository).findByFoodCardNumber(consumerToSave.getFoodCardNumber());
         verify(this.consumerRepository).findByFuelCardNumber(consumerToSave.getFoodCardNumber());
 
         assertEquals(FOOD, result.entrySet().iterator().next().getValue());
     }
+
+    @Test
+    void shouldSetBalanceSuccessFul() {
+        ConsumerService consumerService = new ConsumerService(this.consumerRepository, this.extractRepository);
+
+        int cardNumber = 876;
+        double value = 15.0;
+
+        Consumer consumerSave = Consumer.builder()
+                .id(123)
+                .name("João")
+                .documentNumber(112)
+                .birthDate(new Date())
+                .mobilePhoneNumber(123)
+                .residencePhoneNumber(321)
+                .phoneNumber(456)
+                .email("email")
+                .street("street")
+                .number(123)
+                .city("city")
+                .country("coutry")
+                .postalCode(1)
+                .foodCardNumber(123)
+                .foodCardBalance(345)
+                .fuelCardNumber(876)
+                .fuelCardBalance(654)
+                .drugCardNumber(456)
+                .drugCardBalance(324)
+                .build();
+        doReturn(consumerSave).when(this.consumerRepository).findByFuelCardNumber(consumerSave.getFuelCardNumber());
+
+        String result = consumerService.setBalance(cardNumber, value);
+
+        assertEquals("Balances and values updated for card: " + cardNumber + ", type: " + "fuel", result);
+
+    }
+
+    @Test
+    void shouldReturnRigthDiscountWhenTypeOfFoodEstablishment() {
+        ConsumerService consumerService = new ConsumerService(this.consumerRepository, this.extractRepository);
+        int establishmentType = 1;
+        double value = 150.0;
+
+        double result = consumerService.applyDiscountOrTax(establishmentType, value);
+
+        assertEquals(135.0, result);
+    }
+
+    @Test
+    void shouldReturnRigthDiscountWhenTypeOfDrugEstablishment() {
+        ConsumerService consumerService = new ConsumerService(this.consumerRepository, this.extractRepository);
+        int establishmentType = 2;
+        double value = 150.0;
+
+        double result = consumerService.applyDiscountOrTax(establishmentType, value);
+
+        assertEquals(150.0, result);
+    }
+
+    @Test
+    void shouldReturnRightDiscountWhenTypeOfFuelEstablishment() {
+        ConsumerService consumerService = new ConsumerService(this.consumerRepository, this.extractRepository);
+        int establishmentType = 3;
+        double value = 150.0;
+
+        double result = consumerService.applyDiscountOrTax(establishmentType, value);
+
+        assertEquals(202.5, result);
+    }
+
+    @Test
+    void testEstablishmentTypeMatchesCardType_Food() {
+        ConsumerService consumerService = new ConsumerService(this.consumerRepository, this.extractRepository);
+
+        assertTrue(consumerService.establishmentTypeMatchesCardType(1, "food"));
+        assertFalse(consumerService.establishmentTypeMatchesCardType(1, "drug"));
+        assertFalse(consumerService.establishmentTypeMatchesCardType(1, "fuel"));
+    }
+
+    @Test
+    void testEstablishmentTypeMatchesCardType_Drug() {
+        ConsumerService consumerService = new ConsumerService(this.consumerRepository, this.extractRepository);
+
+        assertTrue(consumerService.establishmentTypeMatchesCardType(2, "drug"));
+        assertFalse(consumerService.establishmentTypeMatchesCardType(2, "food"));
+        assertFalse(consumerService.establishmentTypeMatchesCardType(2, "fuel"));
+    }
+
+    @Test
+    void testEstablishmentTypeMatchesCardType_Fuel() {
+        ConsumerService consumerService = new ConsumerService(this.consumerRepository, this.extractRepository);
+
+        assertTrue(consumerService.establishmentTypeMatchesCardType(3, "fuel"));
+        assertFalse(consumerService.establishmentTypeMatchesCardType(3, "food"));
+        assertFalse(consumerService.establishmentTypeMatchesCardType(3, "drug"));
+    }
+
+    @Test
+    void testEstablishmentTypeMatchesCardType_InvalidType() {
+        ConsumerService consumerService = new ConsumerService(this.consumerRepository, this.extractRepository);
+
+        assertFalse(consumerService.establishmentTypeMatchesCardType(4, "food"));
+        assertFalse(consumerService.establishmentTypeMatchesCardType(4, "drug"));
+        assertFalse(consumerService.establishmentTypeMatchesCardType(4, "fuel"));
+    }
+
 
 }

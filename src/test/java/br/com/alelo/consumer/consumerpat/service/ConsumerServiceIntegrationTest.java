@@ -1,8 +1,10 @@
 package br.com.alelo.consumer.consumerpat.service;
 
 import br.com.alelo.consumer.consumerpat.entity.Consumer;
+import br.com.alelo.consumer.consumerpat.entity.Extract;
 import br.com.alelo.consumer.consumerpat.entity.dto.ConsumerRequest;
 import br.com.alelo.consumer.consumerpat.respository.ConsumerRepository;
+import br.com.alelo.consumer.consumerpat.respository.ExtractRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,7 +14,9 @@ import org.webjars.NotFoundException;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -26,6 +30,8 @@ class ConsumerServiceIntegrationTest {
     public static final String FUEL = "fuel";
     @Autowired
     private ConsumerRepository consumerRepository;
+    @Autowired
+    private ExtractRepository extractRepository;
     @Autowired
     private ConsumerService consumerService;
 
@@ -138,6 +144,35 @@ class ConsumerServiceIntegrationTest {
         assertEquals(consumerRequest.getMobilePhoneNumber(), response.getMobilePhoneNumber());
         assertEquals(consumerRequest.getEmail(), response.getEmail());
 
+    }
+
+    @Test
+    @DirtiesContext
+    @Sql("insertConsumer1.sql")
+    void testBuySuccessFoodEstablishment() {
+        int establishmentType = 1;
+        String establishmentName = "Supermarket";
+        int cardNumber = 77777;
+        String productDescription = "Groceries";
+        double value = 100.0;
+
+        Consumer consumer = new Consumer();
+        consumer.setFoodCardNumber(cardNumber);
+        consumer.setFoodCardBalance(500.0);
+
+        Map<Consumer, String> consumers = new HashMap<>();
+        consumers.put(consumer, "FOOD");
+
+        String result = consumerService.buy(establishmentType, establishmentName, cardNumber, productDescription, value);
+
+        List<Extract> extractSave = this.extractRepository.findAll();
+
+        assertEquals("Purchase successful for card number: " + cardNumber, result);
+        assertNotNull(extractSave);
+        assertEquals(establishmentName, extractSave.get(0).getEstablishmentName());
+        assertEquals(value - ((double) 100 / 10), extractSave.get(0).getAmount());
+        assertEquals(cardNumber, extractSave.get(0).getCardNumber());
+        assertEquals(productDescription, extractSave.get(0).getProductDescription());
     }
 
 }

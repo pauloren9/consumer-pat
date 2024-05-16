@@ -1,7 +1,6 @@
 package br.com.alelo.consumer.consumerpat.entity.dto;
 
 import lombok.Data;
-import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.Min;
 
